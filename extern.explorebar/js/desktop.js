@@ -1,6 +1,41 @@
+
+var map;
+var stackStyle; //Stores the style class to be used on the stack icons
+var closeMenu;
+const commsChannel = new BroadcastChannel("deskeXternChannel");
+function manageProcessComms(functionName,data) {
+
+	if (functionName == null) { //init if null
+		commsChannel.postMessage("desktopReady");
+		console.log("sent");
+		commsChannel.onmessage = function (ev) {
+			console.log("message recieved: ",ev)
+
+			if (ev.data.type = "init-objects") {
+				map = ev.data.map;
+				stackStyle = ev.data.stackStyle;
+				launchDesktop();
+			}
+			
+		};
+	} else {
+		toSendObject = {
+			type: "function",
+			name: functionName,
+			data: data
+		};
+
+		commsChannel.postMessage(toSendObject);
+		
+	}
+}
+manageProcessComms();
+var win = nw.Window.get();
+function launchDesktop() {
+
 var si = require('systeminformation');
 var njds = require('nodejs-disks');
-var win = nw.Window.get();
+
 var focusedDriveName = ""; //Name of the drive currently on focus (i.e context menu/right click)
 var focusedDriveMounted; //Is drive on focus mounted? (i.e context menu/right click)
 var autoOpenFilesOnMount = true;
@@ -17,7 +52,31 @@ var drivesWithUsageInfo = [];
 var firstCheckOnLoad = true; // Used to check if this is the first time we are getting system info such as mounted drives
 var currentlyStackShowingContextMenu; //Store stack div that is currently right clicked
 var stackInformation = {};
-var stackStyle = win.stackStyle; //Stores the style class to be used on the stack icons
+var _ = require('underscore');
+
+function resolveFileType(ext,includeIconExtention) {
+var fType = "blank";
+
+if (ext == "*folder*") {
+	fType = "folder";
+} else {
+        for (var key in map) {
+	//console.log("hihihi");
+          if (_.include(map[key], ext)) {
+		fType = key;
+		//console.log("result.type",key);
+            //cached[ext] = result.type = key;
+            break;
+          }
+        }
+}
+if (includeIconExtention)
+	return fType+".png";
+else
+	return fType;
+}
+
+win.resolveFileType = resolveFileType;
 
 /* disa
 
@@ -31,6 +90,11 @@ close
 //win.showDevTools();
 
 
+
+/*Functions below to adapt to the new system*/
+win.setMountedDrives = function (mountedDrives) {
+	manageProcessComms("setMountedDrives",mountedDrives);
+};
 
 
 function generate_new_piechartB()
@@ -277,7 +341,7 @@ $("#driveProperties").removeClass("hidden");
 //setTimeout(function(){ $(".modal-body").removeClass("hidden"); }, 2000);
 }
 
-function closeModalWindow() {
+win.closeModalWindow = function() {
 $("#diagueBoxes").addClass("hidden");
 $("#driveProperties").addClass("hidden");
 //$(".modal-body").addClass("hidden");
@@ -318,7 +382,10 @@ win.adjustDisplayResolution = function () {
         e.preventDefault();
     }, false);
 
+console.log("localStorage.getItem('allStacks')",localStorage.getItem('allStacks'));
+
 if (localStorage.getItem('allStacks') === null) {
+console.log("stacks here mm");
     var allStacks = [];
 var driveStack = {
 	col: Math.floor(win.width/170),
@@ -338,8 +405,12 @@ var filesStack = {
 	location: "/home/extern/Projects/Files"
 }
 
+console.log("stacks here lel");
+
 allStacks.push(driveStack);
 allStacks.push(filesStack);
+
+console.log("stacks here");
 
 stackInformation.allStacks = allStacks;
 stackInformation.nextID = 3;
@@ -996,7 +1067,9 @@ win.setMountedDrives(mountedDrives);
 });
 }
 
+console.log("showContextMenu loading");
 function showContextMenu(contextMenuX,contextMenuY) {
+	console.log("showContextMenu lounch");
 $(".folderEditor").addClass("hidden");
 $(".folderInfo").removeClass("hidden");
 //console.log("contextMenuX: "+contextMenuX+" contextMenuY: "+contextMenuY);
@@ -1021,7 +1094,9 @@ $(".fa-eject").removeClass("randomResize"); //The eject icon doesn't show up unt
 }, 500);  
 }
 
-function closeMenu() {
+console.log("closeMenu loading");
+closeMenu = function () {
+	console.log("closeMenu lounch");
 //Reset and close any rename options
 	$(".stackRenamer").addClass("hidden");
 	$(".label").removeClass("hidden");
@@ -1646,12 +1721,14 @@ var stackFiles = [];
   
   if (allStacks.length > 1)
     loadStackFiles(currentStackBeingLoaded);
-  else
+  else {
+	console.log("loadGridster hereA");
 	loadGridster();
+  }
 
 function appendStack(location,stackContents, desktopStackData) {
 //var stackID = "stackFiles";
-
+console.log("Appendstack here");
 tempStackFiles = [];
 
 for (var i = 0; i < stackContents.length; i++) {
@@ -1744,6 +1821,7 @@ deskStacks.push([stackIconTemplate, 1, 1, desktopStackData.col, desktopStackData
   currentStackBeingLoaded += 1;
   
   if(currentStackBeingLoaded >= allStacks.length) {
+	console.log("loadGridster hereB");
     loadGridster();
   } else {
     loadStackFiles(currentStackBeingLoaded);
@@ -1858,7 +1936,7 @@ var newcol = ui.$player[0].dataset.col;
 	//console.log("deskIcons",$(".deskIcon"));
 
     } //else {
-      
+      console.log("push stacks here");
       $.each(deskStacks, function (i, widget) {
         if (lastAddedGridsterPosition <= i) {
             gridster.add_widget.apply(gridster, widget);
@@ -2002,6 +2080,6 @@ interact(element).fire({
 */
 
 
-
+}
 
 
