@@ -11,10 +11,14 @@ function manageProcessComms(functionName,data) {
 		commsChannel.onmessage = function (ev) {
 			console.log("message recieved: ",ev)
 
-			if (ev.data.type = "init-objects") {
+			if (ev.data.type == "init-objects") {
 				map = ev.data.map;
 				stackStyle = ev.data.stackStyle;
 				launchDesktop();
+			} else if (ev.data.type == "update-stack-style") {
+				win.changeStackStyle(ev.data.stackStyle)
+			} else if (ev.data.type == "add-new-stack") {
+				win.addNewStack(ev.data.stackLocation)
 			}
 			
 		};
@@ -28,6 +32,10 @@ function manageProcessComms(functionName,data) {
 		commsChannel.postMessage(toSendObject);
 		
 	}
+}
+
+function openApp (appName,files) {
+	commsChannel.postMessage({name: "open-app",appName: appName,files: files});
 }
 manageProcessComms();
 var win = nw.Window.get();
@@ -89,6 +97,7 @@ close
 
 //win.showDevTools();
 
+//PICK10FREE
 
 
 /*Functions below to adapt to the new system*/
@@ -597,6 +606,7 @@ function loadUsages(callback, callbackVariableA) {
 			console.log("error",err);
 
 		console.log("drivesWithUsageInfo",drivesWithUsageInfo);
+		
 
 		if (callback != null)
                   getDriveUsages(false,callback, callbackVariableA);
@@ -648,6 +658,8 @@ console.log("gets here",reloadDrives);
                       
                     }
 
+
+				win.setMountedDrives(mountedDrives);
 				if (callback != null) {
 					console.log("callback is not null");
 					callback(callbackVariableA);
@@ -669,7 +681,21 @@ console.log("gets here",reloadDrives);
 */
 
 function loadFilesApp(location) {
-	win.openApp("extern.files.app",location);
+	openApp("extern.files.app",location);
+	setTimeout(function(){ doNotCloseStack = false; closeMenu(); }, 4000);
+}
+
+function updateMountedDrives(openFiles,mountPoint) {
+	
+	if (openFiles) {
+		
+		getDriveUsages(true,loadFilesApp,mountPoint);
+				//console.log("loadedDrives.length",mountedDrives.length);
+	    		//win.openApp("extern.files.app",loadedDrives[i].mount);
+		
+	} else {
+		getDriveUsages(true);
+	}
 }
 
 
@@ -694,7 +720,7 @@ if (mounted == 'true') {
 for (var i = 0; i < loadedDrives.length; i++) {
 		if (loadedDrives[i].name == partitionName) {
 			//console.log("opening extern.files.app with",loadedDrives[i]);
-			win.openApp("extern.files.app",loadedDrives[i].mount);
+			openApp("extern.files.app",loadedDrives[i].mount);
 			setTimeout(function(){ doNotCloseStack = false; closeMenu(); }, 2000);
 			break;
 		}
@@ -721,24 +747,25 @@ for (var i = 0; i < loadedDrives.length; i++) {
 
 	    for (var i = 0; i < loadedDrives.length; i++) {
 		if (loadedDrives[i].name == partitionName) {
-			var driveIcon = getDriveIcon(loadedDrives[i].fstype, loadedDrives[i].mount, loadedDrives[i].removable);
+			if (loadedDrives[i].uuid == "extern_os")
+				var driveIcon = getDriveIcon(loadedDrives[i].fstype, loadedDrives[i].mount, loadedDrives[i].removable,true);
+			else
+				var driveIcon = getDriveIcon(loadedDrives[i].fstype, loadedDrives[i].mount, loadedDrives[i].removable);
 			loadedDrives[i].mount = mountPoint;
 			//console.log(" IMG",$('#driv_'+loadedDrives[i].name+" > img"));
 			//console.log(" driveIcon ",driveIcon);
-			$('#driv_'+loadedDrives[i].name+" > img").attr("src",driveIcon+"_mount.svg");
+			$('#driv_'+loadedDrives[i].name+" > img").attr("src",driveIcon+"_mount.png");
 			$('#driv_'+loadedDrives[i].name).attr("mounted",true);
 			mountedDrives.push(loadedDrives[i]);
 console.log("mountedDrives",mountedDrives);
-			getBase64Image(driveIcon+'_mount.svg',mountedDrives[mountedDrives.length-1]);
-			win.setMountedDrives(mountedDrives);
+			
+			
 			if (autoOpenFilesOnMount && openFiles) {
-				doNotCloseStack = true;
-				getDriveUsages(true,loadFilesApp,loadedDrives[i].mount);
-				//console.log("loadedDrives.length",mountedDrives.length);
-	    		//win.openApp("extern.files.app",loadedDrives[i].mount);
-				setTimeout(function(){ doNotCloseStack = false; closeMenu(); }, 4000);
+			doNotCloseStack = true;	getBase64Image(driveIcon+'_mount.png',mountedDrives[mountedDrives.length-1],updateMountedDrives,true,loadedDrives[i].mount);
+				
 			} else {
-				getDriveUsages(true);
+				getBase64Image(driveIcon+'_mount.png',mountedDrives[mountedDrives.length-1],updateMountedDrives,false);
+				
 			}
 			//console.log("mountedDrives",mountedDrives);
 
@@ -778,10 +805,13 @@ if (focusedDriveMounted == "true") {
 
 	    for (var i = 0; i < loadedDrives.length; i++) {
 		if (loadedDrives[i].name == partitionName) {
-			var driveIcon = getDriveIcon(loadedDrives[i].fstype, loadedDrives[i].mount, loadedDrives[i].removable);
+			if (loadedDrives[i].uuid == "extern_os")
+				var driveIcon = getDriveIcon(loadedDrives[i].fstype, loadedDrives[i].mount, loadedDrives[i].removable,true);
+			else
+				var driveIcon = getDriveIcon(loadedDrives[i].fstype, loadedDrives[i].mount, loadedDrives[i].removable);
 			//console.log(" IMG",$('#driv_'+loadedDrives[i].name+" > img"));
 			//console.log(" driveIcon ",driveIcon);
-			$('#driv_'+loadedDrives[i].name+" > img").attr("src",driveIcon+".svg");
+			$('#driv_'+loadedDrives[i].name+" > img").attr("src",driveIcon+".png");
 			$('#driv_'+loadedDrives[i].name).attr("mounted",false);
 			
 		}
@@ -805,7 +835,7 @@ closeMenu();
 }
 }
 
-function getDriveIcon (fstype, mount, removable) {
+function getDriveIcon (fstype, mount, removable, systemPartition) {
 var driveIcon = "icons/drive-harddisk";
 
 if (fstype == "ext" || fstype == "ext2" || fstype == "ext3" || fstype == "ext4" || fstype == "ext5")
@@ -816,6 +846,9 @@ if (mount == "/cdrom")
 
 if (fstype == "vfat" && removable && mount != "/cdrom")
 	driveIcon = "icons/drive-removable-media-usb"; //is USB
+
+if (systemPartition)
+	driveIcon = "icons/drive-harddisk-externos"; //is SYSTEM Drive
 
 return driveIcon;
 
@@ -886,10 +919,13 @@ var iconPositionX = 0;
 var iconPositionY = 0;
 
 for (var i = 0; i < data.length; i++) {
-if (data[i].label != "eXtern OS alpha" && data[i].fstype != "" && data[i].uuid != "" && data[i].fstype !="swap" && data[i].type !="disk") {
+if (!(data[i].mount == "/" && data[i].uuid != "extern_os") && data[i].label != "eXtern OS alpha" && data[i].fstype != "" && data[i].uuid != "" && data[i].fstype !="swap" && data[i].type !="disk") {
     var driveName = data[i].label;
 
-var driveIcon = getDriveIcon(data[i].fstype, data[i].mount, data[i].removable);
+if (data[i].uuid == "extern_os")
+	var driveIcon = getDriveIcon(data[i].fstype, data[i].mount, data[i].removable,true);
+else
+	var driveIcon = getDriveIcon(data[i].fstype, data[i].mount, data[i].removable);
 
 var classes = ""; // Store apropriate css classes for the desktop icon
 var oldDriveIcon = driveIcon;
@@ -914,7 +950,7 @@ if (mounted) {
   mountedDrives.push(data[i]);
 console.log("mountedDrives",mountedDrives);
   getDriveUsages(false);
-  getBase64Image(driveIcon+'.svg',mountedDrives[mountedDrives.length-1])
+  getBase64Image(driveIcon+'.png',mountedDrives[mountedDrives.length-1])
 }
 
 //onclick="openDrive(&quot;'+data[i].name+'&quot;,'+mounted+')"
@@ -928,7 +964,7 @@ console.log("mountedDrives",mountedDrives);
 
 
 
-	$("#drives").append('<li style="top: 0px; right: 0px;" xpos = "'+iconPositionX+'" ypos = "'+iconPositionY+'" class="tempDriveIcon"><a id="driv_'+data[i].name+'" href="javascript:void(0);" name="'+data[i].name+'" mounted="'+mounted+'" class="shortcut iconSizeA"> <img src="'+driveIcon+'.svg"> <small> '+driveName+' </small></a></li>');
+	$("#drives").append('<li style="top: 0px; right: 0px;" xpos = "'+iconPositionX+'" ypos = "'+iconPositionY+'" class="tempDriveIcon"><a id="driv_'+data[i].name+'" href="javascript:void(0);" name="'+data[i].name+'" mounted="'+mounted+'" class="shortcut iconSizeA"> <img src="'+driveIcon+'.png"> <small> '+driveName+' </small></a></li>');
 
 
 
@@ -1169,11 +1205,11 @@ $('#properties > a')[0].addEventListener('click', showDriveProperties, false);
 
 //https://mobirise.com/bootstrap-carousel/
 
-function getBase64Image(icon,driveToAssignTo) {
+function getBase64Image(icon,driveToAssignTo,callback,callbackVarA,callbackVarB) {
 var newImg = new Image();
 
 newImg.onload = function() {
-        convertImg(newImg,driveToAssignTo);
+        convertImg(newImg,driveToAssignTo,callback,callbackVarA,callbackVarB);
     }
 
 newImg.src = icon;
@@ -1181,7 +1217,7 @@ newImg.src = icon;
 }
 
 
-function  convertImg(img,driveToAssignTo) {
+function  convertImg(img,driveToAssignTo,callback,callbackVarA,callbackVarB) {
     // Create an empty canvas element
     var canvas = document.createElement("canvas");
     canvas.width = img.width;
@@ -1196,6 +1232,9 @@ function  convertImg(img,driveToAssignTo) {
 
 
     driveToAssignTo.icon = dataURL;
+
+	if (callback != null)
+		callback(callbackVarA,callbackVarB);
 
     }
 
@@ -1367,9 +1406,9 @@ var stackIconTemplate = '<li><a id="drivesStack" stackID=0 href="javascript:void
 				+'<small> Close</small>'
 				+'</div>'
 				+'<figure class="stack '+stackStyle+' notActive">'
-					+'<img src="../../extern.explorebar/icons/drive-harddisk.svg" alt="img01"/>'
-					+'<img src="../../extern.explorebar/icons/drive-harddisk-system.svg" alt="img02"/>'
-					+'<img src="../../extern.explorebar/icons/drive-harddisk-system_mount.svg" alt="img03"/>'
+					+'<img src="../../extern.explorebar/icons/drive-harddisk.png" alt="img01"/>'
+					+'<img src="../../extern.explorebar/icons/drive-harddisk-system.png" alt="img02"/>'
+					+'<img src="../../extern.explorebar/icons/drive-harddisk-system_mount.png" alt="img03"/>'
 				+'</figure>'
 +'<small class="label"> Drives </small>'
 +'<input onfocus="this.value = this.value;" class="stackRenamer hidden form-control input-sm" type="text" placeholder="Rename Stack" value="Drives">'			
@@ -1401,7 +1440,7 @@ var filesToOpen = [];
 filesToOpen.push(fileToOpen.location);
 
 if (fileToOpen.isDirectory) {
-win.openApp("extern.files.app",fileToOpen.location);
+openApp("extern.files.app",fileToOpen.location);
 setTimeout(function(){ doNotCloseStack = false; closeMenu(); }, 2000);
 } else {
 var requiredApps = win.fileTypesApps.prefferedFileTypesApps;//fileTypesApps;//.audio;
@@ -1409,7 +1448,7 @@ var requiredApps = win.fileTypesApps.prefferedFileTypesApps;//fileTypesApps;//.a
         if (requiredApps[currentFileType] != null) {
             //App.openWithApp(requiredApps[currentFileType].id);
 
-	  win.openApp(requiredApps[currentFileType].id,filesToOpen);
+	  openApp(requiredApps[currentFileType].id,filesToOpen);
 	setTimeout(function(){ doNotCloseStack = false; closeMenu(); }, 2000);
             
         }
@@ -1470,7 +1509,7 @@ function setContetMenusOnStack(el) {
 				currentlyOpenedStack = this;
 					$("#blurWallpaper").addClass("hiddenOpacity");
 					//$("#blurWallpaper").removeClass("hidden");
-					setTimeout(function(){$("#blurWallpaper").removeClass("hiddenOpacity");}, 300);
+					setTimeout(function(){$("#blurWallpaper").removeClass("hiddenOpacity"); $("#background").addClass("in-stack"); }, 200);
 
                   if (this.id == "drivesStack") {
 					$("#drives").removeClass("hidden");
@@ -1625,6 +1664,7 @@ function setContetMenusOnStack(el) {
 
 function closeStack() {
 					$("#blurWallpaper").addClass("hiddenOpacity");
+					$("#background").removeClass("in-stack");
 					//setTimeout(function(){  $("#blurWallpaper").addClass("hidden");}, 800);
 					if (currentDiv != null) {
 					if (currentDiv.id == "drivesStack") {

@@ -14,6 +14,14 @@
     background: none;
 }
 
+.in-stack {
+    transform: scale(1.2);
+}
+
+.iconSizeA > small {
+    text-shadow: 0 0 20px rgba(0, 0, 0, 1) !important;
+}
+
 #driveProperties {
     box-shadow: 0 5px 15px rgba(0,0,0,.5);
     width: 500px;
@@ -204,6 +212,7 @@ ul {
     z-index: 2;
     opacity: 0.6;
     -webkit-transition: opacity 1s;
+background-image: linear-gradient( rgba(0, 0, 0, 5), rgba(0, 0, 0, 0.5) );
 }
 
 .iconSizeA > img {
@@ -244,6 +253,7 @@ ul {
     height: 100%;
     position: absolute;
     top: 0;
+    transition: transform 0.5s, opacity 0.5s;
 }
 
 body {
@@ -267,7 +277,7 @@ body {
     bottom: 0;
     font-size: 20px;
     /* font-weight: bold; */
-    text-shadow: 0 0 10px rgb(0, 0, 0), 0 0 30px rgb(0, 0, 0), 0 0 30px rgb(0, 0, 0);
+    text-shadow: 0 0 10px rgb(0, 0, 0), 0 0 20px rgba(0, 0, 0, 0.65), 0 0 10px rgba(0, 0, 0, 0.54);
     display: block;
     -webkit-transition: color 0.5s;
 }
@@ -292,6 +302,8 @@ body {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    font-weight: bold;
+    text-shadow: 0 0 7px rgba(0, 0, 0, 0.65), 0 0 7px rgba(0, 0, 0, 0.4), 0 0 7px rgba(0, 0, 0, 0.69);
 }
 
 
