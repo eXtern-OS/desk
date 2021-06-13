@@ -1,9 +1,7 @@
 var win = nw.Window.get();
 
-let setDeskasDesktop = (winID,isDock) => {
+let setDeskasDesktop = (winID) => {
 	var winType = "DESKTOP";
-	if (isDock)
-		winType = "DOCK";
 	console.log("setDeskasDesktop",winID);
     var exec = require('child_process').exec,
                    child;
