@@ -3,6 +3,7 @@ var map;
 var stackStyle; //Stores the style class to be used on the stack icons
 var closeMenu;
 const commsChannel = new BroadcastChannel("deskeXternChannel");
+const homedir = require('os').homedir();
 function manageProcessComms(functionName,data) {
 
 	if (functionName == null) { //init if null
@@ -37,8 +38,132 @@ function manageProcessComms(functionName,data) {
 function openApp (appName,files) {
 	commsChannel.postMessage({name: "open-app",appName: appName,files: files});
 }
+
+
+
+const monitorCommsChannel = new BroadcastChannel("monitorInstance");
+
+
+var gui = require('nw.gui');
+var monitorInstances = [];
+
+gui.Screen.Init();
+
+var screens = gui.Screen.screens;
+
+for (var i = 1; i < screens.length; i++) {
+	newMonitorInstance (screens[i]);
+}
+
+
+var screenCB = {
+  onDisplayBoundsChanged: function(screen) {
+
+	for (var i = 0; i < monitorInstances.length; i++) {
+		if (monitorInstances[i].id == screen.id) {
+			monitorInstances[i].instance.close();
+			monitorInstances.splice(i, 1);
+			break;
+		}
+	}
+
+	var duplicateMonitorMode = false;
+	for (var i = 0; i < screens.length; i++) {
+		if (screens[i].id != screen.id) {
+			if (screens[i].work_area.x == screen.work_area.x && screens[i].work_area.y == screen.work_area.y) {
+				duplicateMonitorMode = true;
+				break;
+			}
+		}
+	}
+	if (!duplicateMonitorMode)
+		newMonitorInstance(screen);
+    console.log('displayBoundsChanged', screen);
+  },
+
+  onDisplayAdded: function(screen) {
+	var duplicateMonitorMode = false;
+	for (var i = 0; i < screens.length; i++) {
+		if (screens[i].id != screen.id) {
+			if (screens[i].work_area.x == screen.work_area.x && screens[i].work_area.y == screen.work_area.y) {
+				duplicateMonitorMode = true;
+				break;
+			}
+		}
+	}
+	if (!duplicateMonitorMode)
+		newMonitorInstance (screen);
+
+    console.log('displayAdded', screen);
+  },
+
+  onDisplayRemoved: function(screen) {
+	for (var i = 0; i < monitorInstances.length; i++) {
+		if (monitorInstances[i].id == screen.id) {
+			monitorInstances[i].instance.close();
+			monitorInstances.splice(i, 1);
+			break;
+		}
+	}
+    console.log('displayRemoved', screen)
+  }
+};
+
+// listen to screen events
+gui.Screen.on('displayBoundsChanged', screenCB.onDisplayBoundsChanged);
+gui.Screen.on('displayAdded', screenCB.onDisplayAdded);
+gui.Screen.on('displayRemoved', screenCB.onDisplayRemoved);
+
+console.log("Screen.screens: ",screens);
+
+			monitorCommsChannel.onmessage = function (ev) {
+			console.log("request recieved: ",ev)
+				if (ev.data.type == "request-wallpaper") {
+					 //monitorCommsChannel.postMessage({type: "change-wallpaper", data: $("#background")[0].style.backgroundImage});
+					setTimeout(function(){ monitorCommsChannel.postMessage({type: "change-wallpaper", data: $("#background")[0].style.backgroundImage}); }, 3000);
+					
+				}
+
+			}
+		
+
+
+function newMonitorInstance (screen) {
+	const options = {
+		visible_on_all_workspaces : true,
+		show : false
+	}
+
+	var monitorInstance = {
+		id: screen.id
+	}
+
+	nw.Window.open('extern.explorebar/monitorInstance.html', options, function(new_win) {
+	new_win.x = screen.work_area.x;
+	new_win.y = screen.work_area.y;
+
+	new_win.width = screen.work_area.width;
+	new_win.height = screen.work_area.height;
+
+	monitorInstance.instance = new_win;
+
+	monitorInstances.push(monitorInstance);
+	//console.log("new_win: ",new_win);
+	
+
+	//new_win.window.document.body.children[0].children[0].style.backgroundImage = $("body")[0].backgroundImage;
+
+//monitorInstance.instance
+
+});
+}
+
+
+
+
 manageProcessComms();
 var win = nw.Window.get();
+win.showDevTools();
 function launchDesktop() {
 
 var si = require('systeminformation');
@@ -411,7 +536,7 @@ var filesStack = {
 	row: 2,
 	name: "Files",
 	type: "files",
-	location: "/home/extern/Projects/Files"
+	location: homedir+"/Projects/Files"
 }
 
 console.log("stacks here lel");
@@ -586,7 +711,9 @@ console.log("allStacks",allStacks);
 //stackFileContents[fileslocation]
 }
 
-//setTimeout(function(){ addNewStack("/home/extern/Videos"); }, 20000);
+win.removeStack = removeStack;
+
+
 
 
 
@@ -1172,7 +1299,7 @@ $("#mainBg").append('<div id="mountedContextMenu" class="contextMenu dropdown op
                             +'<li id="mount" role="presentation" class="driveMenuItem"><a role="menuitem" style="text-align: center;" tabindex="-1" href="javascript:void(0);"> Mount</a></li>'
 
                             +'<li role="presentation" class="stackMenuItem"><a role="menuitem" style="padding-top: 0;" tabindex="-1" onclick="renameThisStack();" href="javascript:void(0);"><span class="icon randomResize">&#61952;</span> Rename</a></li>'
-                            +'<li id="removeStack" role="presentation" class="stackMenuItem"><a onclick="removeStack()" role="menuitem" tabindex="-1" href="javascript:void(0);"><span class="icon randomResize">&#61918;</span> Remove</a></li>'
+                            +'<li id="removeStack" role="presentation" class="stackMenuItem"><a onclick="win.removeStack()" role="menuitem" tabindex="-1" href="javascript:void(0);"><span class="icon randomResize">&#61918;</span> Remove</a></li>'
                         +'</ul>'
                     +'</div>');
 
@@ -1400,22 +1527,20 @@ interact(element)
 
 //data-row="1" data-col="1" data-sizex="1" data-sizey="1"
 
+console.log("allStacks: ",allStacks);
+for (var i = 0; i < allStacks.length; i++) {
+	if (allStacks[i].type == "drives") {
 var stackIconTemplate = '<li><a id="drivesStack" stackID=0 href="javascript:void(0);" class="shortcut deskIcon stackIcon" title="Drives" folder-control="folderContents">'
 				+'<div class="closeFolder hiddenOpacity">'
 				+'<img class="closeFolderImg" src="../Shared/CoreIMG/icons/actions/close-icon.png">'
 				+'<small> Close</small>'
 				+'</div>'
-				+'<figure class="stack '+stackStyle+' notActive">'
-					+'<img src="../../extern.explorebar/icons/drive-harddisk.png" alt="img01"/>'
-					+'<img src="../../extern.explorebar/icons/drive-harddisk-system.png" alt="img02"/>'
-					+'<img src="../../extern.explorebar/icons/drive-harddisk-system_mount.png" alt="img03"/>'
-				+'</figure>'
-+'<small class="label"> Drives </small>'
-+'<input onfocus="this.value = this.value;" class="stackRenamer hidden form-control input-sm" type="text" placeholder="Rename Stack" value="Drives">'			
- +'</a></li>';
+				+'<img style="width: 100%;" class="stack notActive" src="icons/drive-harddisk_mount.png" alt="img01"/>'
+				+'<small class="label">'+allStacks[i].name+'</small>'
+				+'<input onfocus="this.value = this.value;" class="stackRenamer hidden form-control input-sm" type="text" placeholder="Rename Stack" value="'+allStacks[i].name+'">'
+				+'</a></li>';
 
-for (var i = 0; i < allStacks.length; i++) {
-	if (allStacks[i].type == "drives") {
+
 		deskStacks.push([stackIconTemplate, 1, 1, allStacks[i].col, allStacks[i].row]);
 		break;
 	}
@@ -1466,31 +1591,23 @@ var requiredApps = win.fileTypesApps.prefferedFileTypesApps;//fileTypesApps;//.a
 var currentDiv;
 
 function setContetMenusOnStack(el) {
-	//[].slice.call( document.querySelectorAll( '.deskIcon' ) ).forEach( function( el ) {
 		var togglebtt = el,//.previousElementSibling,
 			togglefn = function(e) {
               if (!stackDragged && (!$(this).find(".label").hasClass("hidden"))) { //justMovedStackPosition && if we are in rename mode, don't activate
 				doNotCloseStack = true;
-				//console.log("togglefn",e);
-				
-				//console.log("small",$(currentlyOpenedStack).find( "small.label" ));
-				//console.log("clicked",$(this).find(".stack").hasClass( 'notActive' ));
 				if( $(this).find(".stack").hasClass( 'notActive' ) ) {
 					var contextOffset = $(this).offset();
 				var stackX = contextOffset.left-5;
 			    	var stackY = contextOffset.top;
 				var pileFrom = "pileTopRight";
 				var animateXFrom = "right";
-				var animateYFrom = "top"
+				var animateYFrom = "top";
 
-				//console.log("stackX: "+stackX);
                   if (stackX < (win.width/2)) {
                     $(".folderContents").css("top",stackY+10);
                 	$(".folderContents").css("left",(stackX+90));
-			//$("."+$(this).attr("folder-control")).addClass("animated slideInLeft");
 			pileFrom = "pileTopLeft";
 			animateXFrom = "left";
-			//console.log("animateXFrom",animateXFrom);
                   } else {
                     $(".folderContents").css("top",stackY+10);
                 	$(".folderContents").css("left",(stackX-770));
@@ -1508,7 +1625,6 @@ function setContetMenusOnStack(el) {
 
 				currentlyOpenedStack = this;
 					$("#blurWallpaper").addClass("hiddenOpacity");
-					//$("#blurWallpaper").removeClass("hidden");
 					setTimeout(function(){$("#blurWallpaper").removeClass("hiddenOpacity"); $("#background").addClass("in-stack"); }, 200);
 
                   if (this.id == "drivesStack") {
@@ -1577,7 +1693,7 @@ function setContetMenusOnStack(el) {
 					
 					
 					
-					$(this).find("figure").addClass("hiddenOpacity");
+					$(this).find(".stack").addClass("hiddenOpacity");
 					$(this).find(".closeFolder").removeClass("hiddenOpacity");
 					$(this).find(".closeFolder").addClass("smallerCloseButton");
 					$(this).find(".label").addClass("hiddenOpacity");
@@ -1691,7 +1807,7 @@ function closeStack() {
 					$("."+$(".stackOpened").attr("folder-control")).removeClass("animated slideInRight");
 					$("."+$(".stackOpened").attr("folder-control")).removeClass("animated slideInLeft");
 					//$(this).removeClass("addBlur");
-					$(".stackOpened").find("figure").removeClass("hiddenOpacity");
+					$(".stackOpened").find(".stack").removeClass("hiddenOpacity");
 					$(".stackOpened").find(".closeFolder").addClass("hiddenOpacity");
 					$(".stackOpened").find(".closeFolder").removeClass("smallerCloseButton");
 					$(".stackOpened").find(".label").removeClass("hiddenOpacity");
@@ -1729,7 +1845,7 @@ function showStackEditor() {
 
 
 
-//const stackLocation = '/home/extern/Projects/Files';
+
 const fs = require('fs');
 var currentStackBeingLoaded = 1;
 
