@@ -59,7 +59,7 @@ for (var i = 1; i < screens.length; i++) {
 var screenCB = {
   onDisplayBoundsChanged: function(screen) {
 
-	for (var i = 0; i < monitorInstances.length; i++) {
+	for (var i = 1; i < monitorInstances.length; i++) {
 		if (monitorInstances[i].id == screen.id) {
 			monitorInstances[i].instance.close();
 			monitorInstances.splice(i, 1);
@@ -68,7 +68,7 @@ var screenCB = {
 	}
 
 	var duplicateMonitorMode = false;
-	for (var i = 0; i < screens.length; i++) {
+	for (var i = 1; i < screens.length; i++) {
 		if (screens[i].id != screen.id) {
 			if (screens[i].work_area.x == screen.work_area.x && screens[i].work_area.y == screen.work_area.y) {
 				duplicateMonitorMode = true;
@@ -76,14 +76,14 @@ var screenCB = {
 			}
 		}
 	}
-	if (!duplicateMonitorMode)
+	if (!duplicateMonitorMode && screens.length != 1)
 		newMonitorInstance(screen);
     console.log('displayBoundsChanged', screen);
   },
 
   onDisplayAdded: function(screen) {
 	var duplicateMonitorMode = false;
-	for (var i = 0; i < screens.length; i++) {
+	for (var i = 1; i < screens.length; i++) {
 		if (screens[i].id != screen.id) {
 			if (screens[i].work_area.x == screen.work_area.x && screens[i].work_area.y == screen.work_area.y) {
 				duplicateMonitorMode = true;
@@ -91,14 +91,14 @@ var screenCB = {
 			}
 		}
 	}
-	if (!duplicateMonitorMode)
+	if (!duplicateMonitorMode  && screens.length != 1)
 		newMonitorInstance (screen);
 
     console.log('displayAdded', screen);
   },
 
   onDisplayRemoved: function(screen) {
-	for (var i = 0; i < monitorInstances.length; i++) {
+	for (var i = 1; i < monitorInstances.length; i++) {
 		if (monitorInstances[i].id == screen.id) {
 			monitorInstances[i].instance.close();
 			monitorInstances.splice(i, 1);
