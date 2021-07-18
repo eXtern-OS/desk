@@ -73,6 +73,8 @@ var screenCB = {
 			if (screens[i].work_area.x == screen.work_area.x && screens[i].work_area.y == screen.work_area.y) {
 				duplicateMonitorMode = true;
 				break;
+			} else {
+				break;
 			}
 		}
 	}
