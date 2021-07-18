@@ -73,11 +73,13 @@ var screenCB = {
 			if (screens[i].work_area.x == screen.work_area.x && screens[i].work_area.y == screen.work_area.y) {
 				duplicateMonitorMode = true;
 				break;
-			} else {
-				break;
 			}
 		}
 	}
+
+	console.log("screens.length: ",screens.length);
+	console.log("screens: ",screens);
+
 	if (!duplicateMonitorMode && screens.length != 1)
 		newMonitorInstance(screen);
     console.log('displayBoundsChanged', screen);
@@ -107,6 +109,8 @@ var screenCB = {
 			break;
 		}
 	}
+
+	screens = screens.filter(el => el !== screen);
     console.log('displayRemoved', screen)
   }
 };
