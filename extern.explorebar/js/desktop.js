@@ -82,7 +82,15 @@ var screenCB = {
 
 	if (!duplicateMonitorMode && screens.length != 1)
 		newMonitorInstance(screen);
+
+		let searchIfExists = screens.filter(el => el.id == screen.id);
+
+		if (searchIfExists.length == 0) {
+			screens.push(screen);
+		}
     console.log('displayBoundsChanged', screen);
+	console.log("screens.length: ",screens.length);
+		console.log("screens: ",screens);
   },
 
   onDisplayAdded: function(screen) {
@@ -98,6 +106,9 @@ var screenCB = {
 	if (!duplicateMonitorMode)
 		newMonitorInstance (screen);
 
+		
+
+		
     console.log('displayAdded', screen);
   },
 
@@ -110,7 +121,7 @@ var screenCB = {
 		}
 	}
 
-	screens = screens.filter(el => el !== screen);
+	screens = screens.filter(el => el.id !== screen.id);
     console.log('displayRemoved', screen)
   }
 };
