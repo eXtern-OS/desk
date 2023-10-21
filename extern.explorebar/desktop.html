@@ -5,10 +5,13 @@
   <meta charset="utf-8">
   <title>eXtern Desktop</title>
     <link href="../Shared/CoreCSS/bootstrap.min.css" rel="stylesheet">
-        <link href="../Shared/CoreCSS/font-awesome.min.css" rel="stylesheet">
+        <link href="css/fonts/fontawesome.min.5.8.1.css" rel="stylesheet">
         <link href="../Shared/CoreCSS/icons.css" rel="stylesheet">
         <link href="../Shared/CoreCSS/style.css" rel="stylesheet">
         <link href="../Shared/CoreCSS/form.css" rel="stylesheet">
+
+
+       <!-- <link href="../Shared/CoreCSS/generics.css" rel="stylesheet"> -->
 	
 	<!--<link rel="stylesheet" type="text/css" href="css/normalize.css" />-->
 	<!--<link rel="stylesheet" type="text/css" href="css/demo.css" />-->
@@ -34,7 +37,7 @@
 		
 		<div class="modal-content minModalWindow" style="display:none">
 			<div class="modal-header" style="padding: 15px 15px 10px;">
-				<button style="width: 10px;" type="button" onclick="closeModalWindow()" class="close" data-dismiss="modal" aria-hidden="true">
+				<button style="width: 10px;" type="button" onclick="win.closeModalWindow()" class="close" data-dismiss="modal" aria-hidden="true">
 					<i style="font-size: 18px;" class="fa fa-circle-thin" aria-hidden="true"></i>
 					</button>
 					<h4 class="modal-title" style="font-size: 14px;">Drive Properties</h4>
@@ -67,7 +70,7 @@
                 </div>
 			</div>
 			<div style="padding: 15px 15px; border-top: 1px solid rgba(255, 255, 255, 0.11);">
-				<button style="width: 200px;margin-top: 0;" type="button" class="btn btn-alt m-r-5" onclick="closeModalWindow()">Close</button>
+				<button style="width: 200px;margin-top: 0;" type="button" class="btn btn-alt m-r-5" onclick="win.closeModalWindow()">Close</button>
 			</div>
 		</div>
 	</div>
@@ -114,6 +117,66 @@
     
   </ul>
 
+  <div id="hubContainter"></div>
+
+  <div id="appsContainter"></div>
+
+  <div id="extrabar">
+	<div class="dropdown_container checkboxDiv">
+		<h5 style="display:inline-block;"><span class="icon" style="font-size: inherit;">&#61796;</span> Enhanced Audio </h5>
+
+			  <div id="toggle-switch" class="pull-right" style="top: 5px; right: 0;">
+				  <div id="enhancedAudioSwitch" class="make-switch" style="margin-right: 0;">
+					  <input id="enhancedAudioSwitchInput" type="checkbox">
+					  <!--checked-->
+				  </div>
+			  </div>
+
+
+		  </div> <!-- End of Enhanced Audio switch -->
+  </div>
+
+<div id="explorebar" style="bottom: 900px; left: 500px;">
+	<div class="col-md-6 apps-list">
+		<a id="openHub" href="javascript:void(0);" onclick="toggleShowHub()"><i id="appsIcon"
+				class="fas fa-layer-group"></i></a>
+		<a id="launcherApp1" class="launcherApp" href="javascript:void(0);"> <img title="App" src=""> </a>
+		<a id="launcherApp2" class="middleAppLancher launcherApp" href="javascript:void(0);"> <img title="App2" src="">
+		</a>
+		<a id="launcherApp3" class="launcherApp" href="javascript:void(0);"> <img title="App3" src=""> </a>
+	</div>
+	  
+	  <div class="col-md-6" style="max-width: fit-content; float: right; padding-right: 20px;">
+		<div id="play-controls">
+			<!--<a href="javascript:void(0);" id="prevAudioIcon"><img src="img/prev_icon.png"/></a>
+			  <a href="javascript:void(0);" id="playAudioIcon"><img src="img/play_icon.svg"/></a>
+			  <a href="javascript:void(0);" id="nextAudioIcon"><img src="img/prev_icon.png"/></a>-->
+			  <img src="../apps/extern.music.app/icon.svg" class="hidden"/>
+			  <a href="#" onclick="mediaPlayackPrevious()"><span class="icon" style="top: 10px; font-size: 27px;" >&#61903;</span></a> <!-- Previous-->
+                      <a id="play-icon" href="#" style="margin-left: 20px; margin-right: 20px; font-size: 24px; text-shadow: none;" onclick="mediaPlaybackToggle()"><i class="fa fa-pause hidden" aria-hidden="true"></i><i class="fa fa-play" aria-hidden="true"></i></a> <!--pause-->
+                      <a href="#" style="/*margin-right: 15%;*/" onclick="mediaPlayackNext()"><span class="icon" style="top: 10px; font-size: 27px;">&#61815;</span></a> <!-- Next-->
+		  </div>
+		<a href="javascript:void(0);" style="position: absolute;">
+			<canvas id="itai-canvas" width="100" height="100" style="width: 70px; height: 70px; position: relative; top: -5px; opacity: 0.9;"></canvas>
+		</a>
+		  <a id="net-icon" href="javascript:void(0);" style="margin-left: 70px;"><span class="icon" style="font-size: 42px; opacity: 0.9; font-size: 42px; top: 1px;">&#61954;</span></a>
+		  <a id="blootooth-icon" href="javascript:void(0);"><span class="icon" style="font-size: 32px; opacity: 0.9; position: relative; top: -2.5px;">&#61779;</span></a>
+		 <div id="volume-viewer">
+			<div style="width: calc(100% + 55px); display: none; position: relative; left: -75px;">  <input id="ex1" data-slider-id='ex1Slider' type="text" data-slider-min="0" data-slider-max="100" data-slider-step="1" data-slider-value="50" data-placement="left" style="bottom: 10px;"/> </div>
+		 </div> 
+		  <a id="volumeIcon" href="javascript:void(0);" onclick="toggleActions('volume-viewer')" data-placement="left" title="Volume" ><span id="volumeToggle" class="icon toggleIcon">&#61921;</span></a>
+		  <a id="batteryToggleOuter" href="javascript:void(0);" data-placement="left" title="Battery & Power" ><span id="batteryToggle" class="icon toggleIcon">&#61764;</span></a>
+		  <a id="time-indicator" href="javascript:void(0);">
+			  <div>26•9•2023</div>
+			  <div>20:34</div>
+		  </a>
+		  <a href="javascript:void(0);"><span class="icon" style="top: -5.5px;">&#61736;</span></a>
+		  <a id="shutdownIcon" class="hidden" href="javascript:void(0);" data-placement="left" title="Power Off" ><i id="shutdownToggle" class="fa fa-power-off fa-icon toggleIcon" aria-hidden="true"></i></a>
+	  </div>
+  </div>
+
+  
+
 </div>
       <script src="../Shared/CoreJS/jquery.min.js"></script> <!-- jQuery Library -->
             <script src="../Shared/CoreJS/jquery-ui.min.js"></script> <!-- jQuery UI -->
@@ -125,14 +188,270 @@
         <script src="../Shared/CoreJS/charts/jquery.flot.js"></script> <!-- All the above chart related functions -->
         <!-- UX -->
         <script src="../Shared/CoreJS/scroll.min.js"></script> <!-- Custom Scrollbar -->
-	<!--<script src="../Shared/CoreJS/jquery.zoomooz.min.js"></script>
+	<!--<script src="../Shared/CoreJS/jquery.zoomooz.min.js"></script> -->
 	<!--<script src="../Shared/CoreJS/interact.min.js"></script>-->
-	<script src="js/jquery.gridster.min.js"></script>
-                <script src="../Shared/CoreJS/sparkline.min.js"></script> <!-- Sparkline - Tiny charts -->
-        <script src="../Shared/CoreJS/easypiechart.js"></script> <!-- EasyPieChart - Animated Pie Charts -->
 
-        <script src="../Shared/CoreJS/charts.js"></script> <!-- All the above chart related functions -->
-       
+
+	<script src="js/jquery.gridster.min.js"></script>
+
+
+
+
+
+
+
+
+
+
+		<script src="../Shared/CoreJS/sparkline.min.js"></script>
+        <!-- Sparkline - Tiny charts -->
+        <script src="../Shared/CoreJS/easypiechart.js"></script>
+        <!-- EasyPieChart - Animated Pie Charts -->
+        <script src="../Shared/CoreJS/charts.js"></script>
+        <!-- All the above chart related functions -->
+        <!-- Map -->
+        <script src="../Shared/CoreJS/maps/jvectormap.min.js"></script>
+        <script src="../../Shared/CoreJS/maps/world.js"></script> <!-- World Map for jVectorMap -->
+        <!-- jVectorMap main library -->
+        <!--<script src="../Shared/CoreJS/maps/au.js"></script>-->
+        <!-- USA Map for jVectorMap -->
+        <!-- UX -->
+        <script src="../Shared/CoreJS/scroll.min.js"></script>
+        <!-- Custom Scrollbar -->
+        <!--Toggles-->
+        <script src="../Shared/CoreJS/toggler.min.js"></script>
+        <!-- Toggler -->
+        <script src="../Shared/CoreJS/select.min.js"></script>
+        <!-- Custom Select -->
+        <!-- Other -->
+        <!--<script src="../Shared/CoreJS/calendar.min.js"></script>-->
+        <!-- Calendar -->
+        <script src="../Shared/CoreJS/feednami-client-v1.1.js"></script>
+        <script src="../Shared/CoreJS/FeedEk.min.js"></script>
+        <!--<script src="js/feeds.min.js"></script>-->
+        <!-- News Feeds -->
+        <!--  Form Related -->
+        <script src="../Shared/CoreJS/icheck.js"></script>
+        <!-- Custom Checkbox + Radio -->
+        <script src="../Shared/CoreJS/slider.min.js"></script>
+	<script src="../Shared/CoreJS/colorpicker.min.js"></script>
+        <!-- Input Slider -->
+        <script src="../Shared/CoreJS/slider.min.js"></script> <!-- Input Slider -->
+        <script src="../Shared/CoreJS/input-mask.min.js"></script> <!-- Input Mask -->
+        <script src="../Shared/CoreJS/spinner.min.js"></script> <!-- Spinner -->
+        <!-- All JS functions -->
+        <script src="../Shared/CoreJS/functions.js"></script>
+
+
+
+        <script src="../Shared/CoreJS/jquery.simpleWeather.min.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+		<script src="../Shared/CoreJS/functions.js"></script>
 <script src="js/desktop.js"></script>
+<script src="js/ux-manager.js"></script>
+
+
+<script id="rendered-js">
+	// Adapted from
+	// https://codepen.io/pekopekopeko/pen/PbYRWps
+	
+	const el = document.getElementById('itai-canvas');
+	const ctx = el.getContext('2d');
+	const dpr = window.devicePixelRatio || 1;
+	const pi = Math.PI;
+	const points = 12;
+	const radius = 100 * dpr;
+	const h = 300 * dpr;
+	const w = 300 * dpr;
+	const center = {
+	  x: w / 2 * dpr,
+	  y: h / 2 * dpr };
+	
+	const circles = [];
+	const rangeMin = 1;
+	const rangeMax = 15;
+	const showPoints = false;
+	
+	let mouseY = 0;
+	let tick = 0;
+	
+	const gradient1 = ctx.createLinearGradient(0, 0, w, 0);
+	gradient1.addColorStop(0, '#96fbc4');
+	gradient1.addColorStop(1, '#f9f586');
+	
+	const gradient2 = ctx.createLinearGradient(0, 0, w, 0);
+	gradient2.addColorStop(0, '#48c6ef');
+	gradient2.addColorStop(1, '#6f86d6');
+	
+	const gradient3 = ctx.createLinearGradient(0, 0, w, 0);
+	gradient3.addColorStop(0, '#9795f0');
+	gradient3.addColorStop(1, '#9be15d');
+	
+	const gradient4 = ctx.createLinearGradient(0, 0, w, 0);
+	gradient4.addColorStop(0, '#f6d365');
+	gradient4.addColorStop(1, '#fda085');
+	
+	const gradients = [gradient1, gradient2, gradient3, gradient4];
+	
+	//window.addEventListener('mousemove', handleMove, true);
+	
+	function handleMove(event) {
+	  mouseY = event.clientY;
+	}
+	
+	ctx.scale(dpr, dpr);
+	
+	el.width = w * dpr;
+	el.height = h * dpr;
+	//el.style.width = w + 'px';
+	//el.style.height = h + 'px';
+	
+	// Setup swing circle points
+	
+	for (var idx = 0; idx <= gradients.length - 1; idx++) {
+	
+	  let swingpoints = [];
+	  let radian = 0;
+	
+	  for (var i = 0; i < points; i++) {
+		radian = pi * 2 / points * i;
+		var ptX = center.x + radius * Math.cos(radian);
+		var ptY = center.y + radius * Math.sin(radian);
+	
+		swingpoints.push({
+		  x: ptX,
+		  y: ptY,
+		  radian: radian,
+		  range: random(rangeMin, rangeMax),
+		  phase: 0 });
+	
+	  }
+	
+	  circles.push(swingpoints);
+	
+	}
+	
+	// --------------------------------------------------------------------------- //
+	// swingCircle
+	
+	function swingCircle() {
+	  ctx.clearRect(0, 0, w * dpr, h * dpr);
+	
+	  ctx.globalAlpha = 0.8;
+	  // ctx.globalCompositeOperation = 'source-over';
+	  ctx.globalCompositeOperation = 'screen';
+	
+	  for (let k = 0; k < circles.length; k++) {
+		let swingpoints = circles[k];
+	
+		for (var i = 0; i < swingpoints.length; i++) {
+		  swingpoints[i].phase += random(1, 10) * -0.01;
+	
+		  let phase = 4 * Math.sin(tick / 65);
+	
+		  if (mouseY !== 0) {
+			phase = mouseY / 300 + 1;
+		  }
+	
+		  var r = radius + swingpoints[i].range * phase * Math.sin(swingpoints[i].phase) - rangeMax;
+	
+		  swingpoints[i].radian += 0.008;
+	
+		  var ptX = center.x + r * Math.cos(swingpoints[i].radian);
+		  var ptY = center.y + r * Math.sin(swingpoints[i].radian);
+	
+		  if (showPoints === true) {
+			ctx.strokeStyle = '#96fbc4';
+	
+			ctx.beginPath();
+			ctx.arc(ptX, ptY, 2 * dpr, 0, pi * 2, true);
+			ctx.closePath();
+			ctx.stroke();
+		  }
+	
+		  swingpoints[i] = {
+			x: ptX,
+			y: ptY,
+			radian: swingpoints[i].radian,
+			range: swingpoints[i].range,
+			phase: swingpoints[i].phase };
+	
+		}
+	
+		const fill = gradients[k];
+	
+		drawCurve(swingpoints, fill);
+	
+	  }
+	
+	  tick++;
+	
+	  requestAnimationFrame(swingCircle);
+	}
+	
+	requestAnimationFrame(swingCircle);
+	
+	
+	// --------------------------------------------------------------------------- //
+	// drawCurve
+	
+	function drawCurve(pts, fillStyle) {
+	  ctx.fillStyle = fillStyle;
+	  ctx.beginPath();
+	  ctx.moveTo(
+	  (pts[cycle(-1, points)].x + pts[0].x) / 2,
+	  (pts[cycle(-1, points)].y + pts[0].y) / 2);
+	  for (var i = 0; i < pts.length; i++) {
+	
+		ctx.quadraticCurveTo(
+		pts[i].x,
+		pts[i].y,
+		(pts[i].x + pts[cycle(i + 1, points)].x) / 2,
+		(pts[i].y + pts[cycle(i + 1, points)].y) / 2);
+	  }
+	
+	  ctx.closePath();
+	  ctx.fill();
+	
+	}
+	
+	// --------------------------------------------------------------------------- //
+	// cycle
+	function cycle(num1, num2) {
+	  return (num1 % num2 + num2) % num2;
+	}
+	
+	// --------------------------------------------------------------------------- //
+	// random
+	function random(num1, num2) {
+	  var max = Math.max(num1, num2);
+	  var min = Math.min(num1, num2);
+	  return Math.floor(Math.random() * (max - min + 1)) + min;
+	}
+	
+	// --------------------------------------------------------------------------- //
+	// rotate
+	
+	// function rotate (x, y, angle) {
+	//     var radians = (pi / 180) * angle,
+	//         cos = Math.cos(radians),
+	//         sin = Math.sin(radians),
+	//         nx = (cos * (x - center.x)) + (sin * (y - center.y)) + center.x,
+	//         ny = (cos * (y - center.y)) - (sin * (x - center.x)) + center.y;
+	//     return { x: nx, y: ny };
+	// }
+		</script>
+
+
 </body>
 </html>
